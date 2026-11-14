@@ -1,39 +1,99 @@
 // Name: Github Repo Reader
 // ID: githubreader
-// Description: A extension to read files from any github repo.
+// Description: An extension to read files from any github repo.
 // By: davidbfdiawseriosly-source <https://github.com/davidbfdiawseriosly-source>
 // License: MIT
 
 (function(Scratch) {
     'use strict';
 
-    // Optional: Add this ONLY if your extension needs internet access (fetch) or browser APIs
     if (!Scratch.extensions.unsandboxed) {
         throw new Error('This extension must run unsandboxed.');
     }
 
     class YourExtensionName {
+        constructor() {
+            // 1. CREATE A VARIABLE TO HOLD THE FILE CONTENT IN MEMORY
+            this.fileContent = '';
+        }
+
         getInfo() {
             return {
-                id: 'githubreader', // Must match the // ID: comment above!
+                id: 'githubreader',
                 name: 'Github Repo Reader',
                 blocks: [
                     {
-    opcode: 'myCommand',
-    blockType: Scratch.BlockType.COMMAND,
-    text: 'do something with [INPUT]',
-    arguments: {
-        INPUT: {
-            type: Scratch.ArgumentType.STRING,
-            defaultValue: 'hello'
-        }
-    }
-}
+                        opcode: 'myCommandBlock',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'get file: [filepath] from repo [repo] owner [repoowner]',
+                        arguments: {
+                            filepath: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'README.md'
+                            },
+                            repo: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'test-repo'
+                            },
+                            repoowner: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'zpqrtbnk'
+                            }
+                        }
+                    },
+                    // 2. ADD A REPORTER BLOCK TO RETURN THE VARIABLE
+                    {
+                        opcode: 'getLastFileContent',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'last file content'
+                    },
+                    {
+                        opcode: 'getfile',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'print [TEXT] to console',
+                        arguments: {
+                            TEXT: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'Hello world!'
+                            }
+                        }
+                    }
                 ]
             };
         }
 
-        // Block functions go here
+        async myCommandBlock(args) {
+            const file = String(args.filepath).trim();
+            const repo = String(args.repo).trim();
+            const owner = String(args.repoowner).trim();
+
+            const url = `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${file}`;
+
+            try {
+                const response = await Scratch.fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error! Status: ${response.status}`);
+                }
+
+                // 3. SAVE THE TEXT INTO OUR CLASS VARIABLE
+                this.fileContent = await response.text();
+                console.log("File loaded successfully into variable!");
+
+            } catch (err) {
+                console.error("Failed to get file from GitHub:", err.message);
+                this.fileContent = "Error loading file!";
+            }
+        }
+
+        // 4. THIS FUNCTION RUNS WHEN YOU USE THE REPORTER BLOCK
+        getLastFileContent(args) {
+            return this.fileContent; // Returns whatever text was saved
+        }
+
+        getfile(args) {
+            console.log(args.TEXT);
+        }
     }
 
     Scratch.extensions.register(new YourExtensionName());
