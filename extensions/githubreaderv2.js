@@ -61,15 +61,14 @@
                 ]
             };
         }
-
         async myCommandBlock(args) {
             const file = String(args.filepath).trim();
             const repo = String(args.repo).trim();
             const owner = String(args.repoowner).trim();
 
-            // Dynamic timestamp query parameter to bypass the 5-minute GitHub CDN cache
+            // FIXED: Added the missing "raw." to the beginning of the domain name
             const cacheBuster = new Date().getTime();
-            const url = `https://githubusercontent.com{owner}/${repo}/HEAD/${file}?t=${cacheBuster}`;
+            const url = `https://raw.githubusercontent.com{owner}/${repo}/HEAD/${file}?t=${cacheBuster}`;
 
             try {
                 const response = await Scratch.fetch(url);
@@ -87,6 +86,7 @@
                 this.fileContent = "Error loading file!";
             }
         }
+
 
         // 4. THIS FUNCTION RUNS WHEN YOU USE THE REPORTER BLOCK
         getLastFileContent(args) {
