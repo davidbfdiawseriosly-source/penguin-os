@@ -1,7 +1,7 @@
 // Name: Github Repo Reader
 // ID: githubreader
 // Description: An extension to read files from any github repo.
-// By: davidbfdiawseriosly-source <https://github.com/davidbfdiawseriosly-source>
+// By: davidbfdiawseriosly-source <https://github.com>
 // License: MIT
 
 (function(Scratch) {
@@ -67,7 +67,9 @@
             const repo = String(args.repo).trim();
             const owner = String(args.repoowner).trim();
 
-            const url = `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${file}`;
+            // Dynamic timestamp query parameter to bypass the 5-minute GitHub CDN cache
+            const cacheBuster = new Date().getTime();
+            const url = `https://githubusercontent.com{owner}/${repo}/HEAD/${file}?t=${cacheBuster}`;
 
             try {
                 const response = await Scratch.fetch(url);
